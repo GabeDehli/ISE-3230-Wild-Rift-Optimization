@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 30 14:43:42 2021
+
+@author: gabedehlendorf
+"""
+
+import cvxpy as cp
+
+y = cp.Variable(55, boolean = True)
+x = cp.Variable(19, nonneg = True)
+
+
+assassin_obj_func = (.1*x[0] - 500*x[1] + .07*x[2] + .07*x[3] + .001*x[4] + 
+                     .5*x[6] + .25*x[7] + (.3)*x[8] + (1/12)*x[11] + 
+                     (1/12)*x[12] + .1*x[13] + .0008*x[14] + (.1)*x[15])
+
+support_obj_func = (-500*x[0] + .1*x[1] + 0.07*x[3] + 
+            x[9] + 0.01*x[11] + 0.01*x[12] + 0.05*x[14] + 0.1*x[15]
+            + 0.01*x[16])
+
+marksman_obj_func = (.15*x[0] - 10*x[1] + (1/7)*x[2] + (10)*x[3] + (1/13)*x[8] 
+                     + (1/13)*x[11] + .1*x[12] + (1/8)*x[13])
+
+mage_obj_func = ((1/15)*x[1] + .006*x[4] + .25*x[5] + .1*x[7] + 
+            .1*x[9] + (1/13)*x[11] + (1/13)*x[12] + .1*x[15] + (1/195)*x[16] 
+            + (1/6)*x[17])
+
+fighter_obj_func = (0.1*x[0] -500*x[1] + .18*x[2] + -500*x[3] +
+                    (1/75)*x[4] + .1*x[6] + .5*x[7] + 0*x[8] + 
+                    (1/9)*x[11] + (1/9)*x[12] + (1/18)*x[13] + 
+                    .01*x[14] + .25*x[15] - 1*x[16])
+
+tank_obj_func = (.015*x[4] + .8*x[7] + (1/7)*x[11] + (1/7)*x[12] + .03*x[14] + .1*x[15] + (1/150)*x[16])
+
+items = ('Bloodthirster', 'Statik Shiv', 'Blade of the Ruined King', 'Rapid Fire Cannon', 
+         "Runaan's Hurricane", "Youmuu's Ghostblade" , 'Duskblade of Drakthar', 
+         'Infinity Edge',"Mortal Reminder", "Black Cleaver", "Muramana", "Trinity Force", "Maw of Malmortius",
+         "Death's Dance", "Phantom Dancer", "Umbral Glaive", "Luden's Echo", "Morrelonomicon", 
+         "Void Staff", "Rabadon's Deathcap", "Rylai's Crystal Scepter", "Liandry's Torment",
+         "Rod of Ages", "Lich Bane", "Nashor's Tooth", "Seraph's Embrace", "Ardent Censor",
+         "Hextech Gunblade", "Harmonic Echo", "Athene's Unholy Grail", "Awakened Soulstealer",
+         "Infinity Orb", "Guardian Angel", "Spirit Visage", "Randuin's Omen", "Thornmail",
+         "Warmog's Armor", "Sterak's Gage", "Iceborn Gauntlet", "Dead Man's Plate",
+         "Abyssal Mask", "Zeke's Convergence", "Protector's Vow", "Fimbulwinter",
+         "Frozen Heart", "Force of Nature", "Sunfire Aegis", "Crystalline Reflector",
+         "Essence Reaver", "Navori Quickblades", "Serylda's Grudge", "Staff of Flowing Water",
+         "Stormrazor", "Solari Chargeblade", "Wit's End")
+
+
+
+constraints = []
+#Attack Damage Item Stats
+constraints.append(x[0] ==  50*y[0] + 20*y[2] + 50*y[5] + 55*y[6] + 60*y[7] + 
+                   40*y[8] + 35*y[9] + 25*y[10] + 20*y[11] + 45*y[12] + 
+                   35*y[13] + 50*y[15] + 30*y[27] + 40*y[32] + 45*y[37] + 
+                   40*y[48] + 45*y[49] + 40*y[50] + 65*y[51] + 25*y[52])
+#Ability Power Item Stats
+constraints.append(x[1] == 80*y[16] + 70*y[17] + 70*y[18] + 120*y[19] + 70*y[20] + 70*y[21]
+                   + 60*y[22] + 80*y[23] + 70*y[24] + 35*y[25] + 60*y[26] + 60*y[27] + 80*y[28]
+                   + 55*y[29] + 65*y[30] + 60*y[31] + 60*y[49])
+#Attack Speed Item Stats
+constraints.append(x[2] == 35*y[1] + 35*y[2] + 35*y[3] + 45*y[4] + 30*y[11] 
+                   + 45*y[14] + 50*y[24] + 20*y[52] + 30*y[53] + 45*y[54])
+#Critical Rate Item Stats
+constraints.append(x[3] == 25*y[0] + 25*y[1] + 25*y[3] + 25*y[4] + 
+                   25*y[7] + 25*y[14] + 25*y[48] + 25*y[49]
+                   + 20*y[52] + 25*y[53])
+#Max Health Item Stats
+constraints.append(x[4] == 350*y[9] + 200*y[11] + 300*y[13] + 300*y[17] + 350*y[20] + 250*y[21]
+                   + 250*y[22] + 250*y[26] + 200*y[31] + 350*y[33] + 400*y[34] + 200*y[35]
+                   + 700*y[36] + 400*y[37] + 225*y[39] + 300*y[40] + 350*y[42]
+                   + 350*y[43] + 350*y[45] + 500*y[46])
+#Magic Penetration Item Stats
+constraints.append(x[5] == 15*y[17] + 15*y[31])
+
+#Armor Penetration Item Stats
+constraints.append(x[6] == 10*y[5] + 15*y[6] 
+                   + 10*y[15])
+#Movement Speed Item Stats
+constraints.append(x[7] == 5*y[1] + 5*y[3] + 5*y[11] + 5*y[14]
+                   + 5*y[23] + 5*y[26] + 5*y[31] + 5*y[45])
+#Physical Vamp Item Stats
+constraints.append(x[8] == 15*y[0] + 10*y[2] + 15*y[27])
+
+#Percent Ability Power Item Stats
+constraints.append(x[9] ==  40*y[19])
+
+#Spell Vamp Item Stats
+constraints.append(x[10] ==  15*y[27])
+
+#Magic Resistance Item Stats
+constraints.append(x[11] == 45*y[12] + 40*y[29] + 45*y[33] + 40*y[40] + 40*y[41] 
+                   + 45*y[45] + 50*y[54])
+#Armor Item Stats
+constraints.append(x[12] ==  40*y[32] + 55*y[34] + 75*y[35]
+                   + 50*y[38] + 50*y[39] + 40*y[41] + 40*y[42]
+                   + 70*y[44] + 45*y[47])
+#Percent Armor Pen Item Stats
+constraints.append(x[13] == 30*x[8])
+
+#Health Regeneration Item Stats
+constraints.append(x[14] == 100*y[33]
+                   + 200*y[36])
+
+#Ability Haste Item Stats
+constraints.append(x[15] == 10*y[5] + 10*y[6] 
+                   + 25*y[9] + 20*y[10] + 10*y[12] + 15*y[13]
+                   + 10*y[15] + 10*y[16] + 10*y[23] + 25*y[24] + 25*y[25] + 10*y[26] 
+                   + 10*y[28] + 10*y[29] + 25*y[30] + 10*y[33]
+                   + 10*y[36] + 25*y[38] + 10*y[40] + 10*y[41] + 10*y[42]
+                   + 10*y[43] + 20*y[44] + 15*y[46] + 15*y[47] + 20*y[48] + 15*y[49]
+                   + 15*y[50] + 20*y[51] + 25*y[53])
+#Max Mana Item Stats
+constraints.append(x[16] == 1000*y[10] + 300*y[16]
+                   + 300*y[22] + 1200*y[25] + 300*y[28]
+                   + 200*y[30] + 300*y[40] + 150*y[41]
+                   + 1200*y[43] + 300*y[44] + 350*y[51])
+#Percent Magic Pen Item Stats
+constraints.append(x[17] == 40*y[18])
+
+#5 Unique Items
+constraints.append(y[0] + y[1] + y[2] + y[3] + y[4] + y[5] + y[6] + 
+                   y[7] + y[8] + y[9] + y[10] + y[11] + y[12] + y[13] + y[14]
+                   + y[15] + y[16] + y[17] + y[18] + y[19] + y[20] + y[21]
+                   + y[22] + y[23] + y[24] + y[25] + y[26] + y[27] + y[28]
+                   + y[29] + y[30] + y[31] + y[32] + y[33] + y[34] + y[35]
+                   + y[36] + y[37] + y[38] + y[39] + y[40] + y[41] + y[42]
+                   + y[43] + y[44] + y[45] + y[46] + y[47] + y[48] + y[49]
+                   + y[50] + y[51] + y[52] + y[53] + y[54] == 5)
+
+#4 or less critical chance items
+constraints.append(y[0] + y[1] + y[3] + y[4] + 
+                   y[7] + y[14] + y[48] + y[49]
+                   + y[52] + y[53] <= 4)
+
+problem = cp.Problem(cp.Maximize(assassin_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(assassin_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
+        
+#------------------------------------#
+problem = cp.Problem(cp.Maximize(support_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(support_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
+
+#------------------------------------#
+problem = cp.Problem(cp.Maximize(marksman_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(marksman_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
+
+#------------------------------------#
+problem = cp.Problem(cp.Maximize(mage_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(mage_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
+
+#------------------------------------#
+problem = cp.Problem(cp.Maximize(fighter_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(fighter_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
+        
+#------------------------------------#
+problem = cp.Problem(cp.Maximize(tank_obj_func), constraints)
+
+problem.solve(solver=cp.GUROBI, verbose = False)
+
+print("obj_func =")
+print(tank_obj_func.value)
+print("x =")
+print(x.value)
+print("y =")
+t = y.value
+print(y.value)
+for i in range(55):
+    if (t[i] == 1):
+        print(items[i])
